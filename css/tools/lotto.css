@@ -1,0 +1,51 @@
+#lottoArea {
+	position: absolute;
+    top: 30vh;
+    left: 50vw;
+    transform: translateX(-50%);
+}
+#lottoArea button{
+	font-size: 1.5em;
+	display: block;
+	margin: auto;
+}
+
+#numberDiv {
+	margin: 10px;
+	height: 50px;
+}
+
+#numberDiv span{
+	font-size: 2em;
+	margin: auto;
+    position:absolute;
+    left: 0;
+    right: 0;
+	text-align: center;
+	vertical-align: middle;
+	width: 1.5em;
+	height: 1.5em;
+	line-height: 1.4em;
+	transition: transform .4s ease-in-out 0s;
+	border: 1px solid;
+	border-radius: 50%;
+}
+
+.numOrder1 {
+	transform: translateX(-5em)
+}
+.numOrder2 {
+	transform: translateX(-3em)
+}
+.numOrder3 {
+	transform: translateX(-1em)
+}
+.numOrder4 {
+	transform: translateX(1em)
+}
+.numOrder5 {
+	transform: translateX(3em)
+}
+.numOrder6 {
+	transform: translateX(5em)
+}
