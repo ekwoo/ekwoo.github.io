@@ -3,7 +3,7 @@
  */
 {
 	
-	function addParameterToUrl(url, paramObj){
+	let addParameterToUrl = (url, paramObj) => {
 		let urlParam = []
 		Object.keys(paramObj).forEach(key => {
 			urlParam.push(key+"="+encodeURIComponent(paramObj[key]))
@@ -34,7 +34,7 @@
 	 * @param {object} options fetch 옵션
 	 * @return {Promise} promise response를 파라미터로 넘기는 promise
 	 */
-	function getResponse(url, body, options){
+	let getResponse = (url, body, options) => {
 		if(!options) options = {}
 		if(!options.method) options.method = 'GET'
 		options.method = options.method.toUpperCase()
@@ -69,12 +69,13 @@
 	 * @param {object} options fetch 옵션
 	 * @return {Promise} promise 응답 json을 파라미터로 넘기는 promise
 	 */
-	function sendRequest(url, body, options){
+	let sendRequest = (url, body, options) => {
 		return getResponse(url, body, options)
 		.then((response) => {
 			return response.json()
 		})
 	}
+	window.sendRequest = sendRequest
 	/**
 	 * 서버로 요청을 날리고 그 결과를 text으로 밭기
 	 * @param {string} url 요청URL
@@ -82,11 +83,11 @@
 	 * @param {object} options fetch 옵션
 	 * @return {Promise} promise 응답 template을 파라미터로 넘기는 promise
 	 */
-	function getTemplate(url, body, options){
+	let getTemplate = (url, body, options) => {
 		return getResponse(url, body, options)
 		.then((response) => {
 			return response.text()
 		})
 	}
-	window.sendRequest = sendRequest
+	window.getTemplate = getTemplate
 }

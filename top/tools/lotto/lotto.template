@@ -1,0 +1,4 @@
+<div id="lottoArea">
+	<button onclick="lottoArea.getLottoNumbers()">번호받기</button>
+	<div id="numberDiv"></div>
+</div>

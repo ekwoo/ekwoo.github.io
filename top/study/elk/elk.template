@@ -1,0 +1,4 @@
+<div id="articleArea">
+	<div id="articleList"></div>
+	<div id="articleContent"></div>
+</div>

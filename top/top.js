@@ -6,7 +6,7 @@
 		/**
 		 * 상단 메뉴 목록 - 이거는 메뉴추가할때마다 늘려줘야함..
 		 */
-		let topMenuList = ['algo', 'tools']
+		let topMenuList = ['study', 'tools']
 		
 		topMenuList.forEach((item) => {
 			sendRequest('./json/top/'+item+'.json')
@@ -27,11 +27,11 @@
 		subDiv.style.maxHeight='0'
 		Object.keys(sub).forEach(function(key){
 			let subLi = document.createElement('li')
-			subLi.innerHTML = key
+			subLi.innerHTML = sub[key]
 			subUl.appendChild(subLi)
 			subLi.onclick = function(){
 				subDiv.style.maxHeight = '0'
-				main.goto([name, sub[key]])
+				main.goto([name, key], key)
 			}
 		})
 		topDiv.onmouseover = () => {subDiv.style.maxHeight = subUl.offsetHeight+10+'px'}

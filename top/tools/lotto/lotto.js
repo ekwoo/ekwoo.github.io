@@ -1,3 +1,15 @@
+function random(start, end){
+	if(!end){
+		end = start
+		start = 0
+	}
+	if(!end){
+		end = 1
+	}
+	console.log(start+" "+end)
+	return Math.floor((window.crypto || window.msCrypto).getRandomValues(new Uint32Array(1))[0]/4294967296*(end-start) + start)
+}
+
 let lottoArea = {
 	fix : 0,
 	getLottoNumbers : () => {
@@ -18,8 +30,8 @@ let lottoArea = {
 		//console.log(heap)
 		let ball, pos
 		let answer = []
-		let cnt = 45
 		let order = 1
+		let cnt = 45
 		var innerPromise
 		let numberDiv = document.getElementById('numberDiv')
 		numberDiv.innerHTML = ''
@@ -28,7 +40,7 @@ let lottoArea = {
 		})
 		function loop(resolve){
 			if(lottoArea.fix != numfix) throw 'end'
-			ballIdx = Math.floor(Math.random()*cnt)+1
+			let ballIdx = random(1, cnt+1)
 			pos = 1
 			while(pos<width){
 				pos*=2
@@ -37,19 +49,21 @@ let lottoArea = {
 					pos+=1
 				}
 			}
-			let num = document.createElement('span')
-			num.innerHTML = (pos-width+1)
-			num.className = 'numOrder'+order
+			let number = pos-width+1;
+			let numSpan = document.createElement('span')
+			numSpan.innerHTML = number
+			numSpan.range = Math.floor(number/10)*10;
+			numSpan.className = 'numOrder'+order+" numColor"+numSpan.range
 			order++
-			numberDiv.appendChild(num)
-			answer.push(num)
+			numberDiv.appendChild(numSpan)
+			answer.push(numSpan)
 			while(pos>=1){
 				heap[pos]--
 				pos = Math.floor(pos/2)
 			}
 			cnt--
 			if(cnt>=40){
-				setTimeout(()=>loop(resolve), Math.random()*1000)
+				setTimeout(()=>loop(resolve), random(1000))
 			}else{
 				resolve(answer)
 			}
@@ -58,10 +72,11 @@ let lottoArea = {
 		return promise.then(res => {
 			setTimeout(function(){
 				let order = 1
-				res.sort((a, b)=>(a.innerHTML-b.innerHTML)).forEach((num)=> {
-					num.className = 'numOrder'+order++
+				res.sort((a, b)=>(a.innerHTML-b.innerHTML)).forEach((numSpan)=> {
+					numSpan.className = 'numOrder'+order++ +" numColor"+numSpan.range
 				})
-			}, Math.random()*1000)
+			}, random(1000))
 		})
 	},
 }
+window.lottoArea = lottoArea

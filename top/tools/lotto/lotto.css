@@ -8,14 +8,15 @@
 	font-size: 1.5em;
 	display: block;
 	margin: auto;
+	cursor: pointer;
 }
 
-#numberDiv {
+#lottoArea #numberDiv {
 	margin: 10px;
 	height: 50px;
 }
 
-#numberDiv span{
+#lottoArea #numberDiv span{
 	font-size: 2em;
 	margin: auto;
     position:absolute;
@@ -27,25 +28,43 @@
 	height: 1.5em;
 	line-height: 1.4em;
 	transition: transform .4s ease-in-out 0s;
-	border: 1px solid;
+	color: white;
 	border-radius: 50%;
+	user-select: none;
+	box-shadow: inset -.2em -.2em .3em rgba(0,0,0,.35);
 }
 
-.numOrder1 {
+#lottoArea .numOrder1 {
 	transform: translateX(-5em)
 }
-.numOrder2 {
+#lottoArea .numOrder2 {
 	transform: translateX(-3em)
 }
-.numOrder3 {
+#lottoArea .numOrder3 {
 	transform: translateX(-1em)
 }
-.numOrder4 {
+#lottoArea .numOrder4 {
 	transform: translateX(1em)
 }
-.numOrder5 {
+#lottoArea .numOrder5 {
 	transform: translateX(3em)
 }
-.numOrder6 {
+#lottoArea .numOrder6 {
 	transform: translateX(5em)
+}
+
+#lottoArea .numColor0{
+	background-color: #FbC400
+}
+#lottoArea .numColor10{
+	background-color: #69C8F2
+}
+#lottoArea .numColor20{
+	background-color: #FF7272
+}
+#lottoArea .numColor30{
+	background-color: #AAAAAA
+}
+#lottoArea .numColor40{
+	background-color: #B0D840
 }
