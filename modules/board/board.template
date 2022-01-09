@@ -1,4 +1,19 @@
-<div>
-	board
-	<div id="articleArea"></div>
+<div id="board">
+	<div id="articleTitle"></div>
+	<div id="articleContent"></div>
+
+	<div class="title"><span id="name" class="name"></span> 게시글 목록<span class="articleTotal">총 <span id="articleTotalCnt">0</span>건</span></div>
+	<div id="articleList">
+		<table>
+			<colgroup>
+				<col>
+				<col width="65px">
+			</colgroup>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+	<div id="pagenator">
+		<a id="goFirst">&lt;&lt;</a><a id="goFront">&lt;</a><div id="pageList"><a>1</a><a>2</a><a>3</a><a class="disabled">...</a><a>5</a><a>6</a><a>7</a></div><a id="goBack">></a><a id="goLast">>></a>
+	</div>
 </div>

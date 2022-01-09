@@ -6,7 +6,7 @@ function random(start, end){
 	if(!end){
 		end = 1
 	}
-	console.log(start+" "+end)
+	//console.log(start+" "+end)
 	return Math.floor((window.crypto || window.msCrypto).getRandomValues(new Uint32Array(1))[0]/4294967296*(end-start) + start)
 }
 
@@ -34,7 +34,7 @@ let lottoArea = {
 		let cnt = 45
 		var innerPromise
 		let numberDiv = document.getElementById('numberDiv')
-		numberDiv.innerHTML = ''
+		numberDiv.textContent = ''
 		var promise =  new Promise(resolve => {
 			loop(resolve)
 		})
@@ -51,7 +51,7 @@ let lottoArea = {
 			}
 			let number = pos-width+1;
 			let numSpan = document.createElement('span')
-			numSpan.innerHTML = number
+			numSpan.textContent = number
 			numSpan.range = Math.floor(number/10)*10;
 			numSpan.className = 'numOrder'+order+" numColor"+numSpan.range
 			order++
@@ -72,7 +72,7 @@ let lottoArea = {
 		return promise.then(res => {
 			setTimeout(function(){
 				let order = 1
-				res.sort((a, b)=>(a.innerHTML-b.innerHTML)).forEach((numSpan)=> {
+				res.sort((a, b)=>(a.textContent-b.textContent)).forEach((numSpan)=> {
 					numSpan.className = 'numOrder'+order++ +" numColor"+numSpan.range
 				})
 			}, random(1000))

@@ -1,0 +1,156 @@
+<pre>
+DELETE /test-text
+
+PUT /test-text
+{
+  "settings": {
+    "number_of_replicas": 1,
+    "number_of_shards": 1, 
+    "analysis": {
+      "analyzer": { 
+        "default": {
+          "type": "custom",
+          "tokenizer": "nori",
+          "filter": [
+            "lowercase",
+            "stop",
+            "snowball_english",
+            "nori"
+          ]
+        },
+        "default_search": {
+          "type": "custom",
+          "tokenizer": "nori",
+          "filter": [
+            "lowercase",
+            "stop",
+            "snowball_english",
+            "nori"
+          ]
+        }
+      },
+      "tokenizer": {
+        "nori": {
+            "type": "nori_tokenizer",
+            "decompound_mode": "mixed"
+        }
+      },
+      "filter": {
+        "snowball_english":{
+          "type":"snowball",
+          "language":"English"
+        },
+        "nori": {
+          "type": "nori_part_of_speech",
+          "stoptags": [
+            "E"
+            ,"J"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text",
+        "boost": 1.5
+      },
+      "content": {
+        "type": "text"
+      },
+      "empNo": {
+        "type": "keyword"
+      },
+      "createDtm": {
+        "type": "date"
+      },
+      "updateDtm": {
+        "type": "date"
+      },
+      "like": {
+        "type": "keyword",
+        "index": false
+      },
+      "answers": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "text"
+          },
+          "empNo": {
+            "type": "keyword"
+          },
+          "like": {
+            "type": "keyword",
+            "index": false
+          },
+          "comments":{
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "text"
+              },
+              "createDtm": {
+                "type": "date"
+              },
+              "empNo": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+POST /test-text/_doc
+{
+  "title" : "this is 제목입니다",
+  "content" : "내용내용 13인의 아해가 도로로 질주하오 I don't care Who You Are, Where you from, Don't care what you did",
+  "empNo" : "12345",
+  "createDtm":"2022-01-08T13:02:02",
+  "updateDtm":"2022-01-08T13:02:02"
+}
+
+GET /test-text/_search
+{
+  "query": {
+    "multi_match": {
+      "query" : "제목입니다 내용 도로 care",
+      "fields": ["title", "content"]
+    }
+  },
+  "highlight": {
+    "fields": {
+      "title": {},
+      "content": {}
+    }
+  }
+}
+
+POST /_analyze
+{
+  "tokenizer": {
+    "type": "nori_tokenizer",
+    "decompound_mode": "mixed"
+  },
+  "filter": [
+    "lowercase",
+    "stop",
+    {
+      "type":"snowball",
+      "language":"English"
+    },
+    {
+      "type": "nori_part_of_speech",
+      "stoptags": [
+        "E"
+        ,"J"
+        ]
+    }
+  ],
+  "text" : "이것은 한글 입니다. and this is something ENGLISH running fox"
+}
+</pre>

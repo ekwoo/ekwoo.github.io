@@ -1,29 +1,30 @@
 /**
- * 유틸성
+ * 공통유틸성
  */
 {
+	if(!window.common) window.common = {}
 	
 	let addParameterToUrl = (url, paramObj) => {
-		let urlParam = []
+		let urlParam = [];
 		Object.keys(paramObj).forEach(key => {
-			urlParam.push(key+"="+encodeURIComponent(paramObj[key]))
-		})
+			urlParam.push(key+"="+encodeURIComponent(paramObj[key]));
+		});
 		if(urlParam.length>0){
-			let hashIdx = url.indexOf('#')
-			let hash
+			let hashIdx = url.indexOf('#');
+			let hash;
 			if(hashIdx >= 0){
-				hash = url.substring(hashIdx)
-				url = url.substring(0, hashIdx)
+				hash = url.substring(hashIdx);
+				url = url.substring(0, hashIdx);
 			}
-			let urlparamStr
+			let urlparamStr;
 			if(url.indexOf('&')>=0){
-				urlparamStr='?'
+				urlparamStr='?';
 			}else{
-				urlparamStr='&'
+				urlparamStr='&';
 			}
-			urlparamStr+=urlParam.join('&')
-			url +=urlparamStr+hash
-			return url
+			urlparamStr+=urlParam.join('&');
+			url +=urlparamStr+hash;
+			return url;
 		}
 	}
 
@@ -35,31 +36,31 @@
 	 * @return {Promise} promise response를 파라미터로 넘기는 promise
 	 */
 	let getResponse = (url, body, options) => {
-		if(!options) options = {}
-		if(!options.method) options.method = 'GET'
-		options.method = options.method.toUpperCase()
+		if(!options) options = {};
+		if(!options.method) options.method = 'GET';
+		options.method = options.method.toUpperCase();
 		if(options.method != 'GET' && options.method != 'HEAD') {
-			options.body = JSON.stringify(body)
+			options.body = JSON.stringify(body);
 		} else if (body){
-			url = addParameterToUrl(url, body)
+			url = addParameterToUrl(url, body);
 		}
 		return fetch(url, options)
 		.then((response) => {
 			if(response.status == 200){
-				return response
+				return response;
 			}else{
-				throw new Error('request fail['+response.status+']', {cause: response.error})
+				throw new Error('request fail['+response.status+']', {cause: response.error});
 			}
 			
 		})
 		.catch((error) => {
 			if(!options.throwError){
-				console.error('error occurs during requests.', error)
-				alert('sorry, request failed. please try again.')
+				console.error('error occurs during requests.', error);
+				alert('sorry, request failed. please try again.');
 			}else{
-				throw error
+				throw error;
 			}
-		})
+		});
 	}
 	
 	/**
@@ -72,10 +73,11 @@
 	let sendRequest = (url, body, options) => {
 		return getResponse(url, body, options)
 		.then((response) => {
-			return response.json()
-		})
+			return response.json();
+		});
 	}
-	window.sendRequest = sendRequest
+	window.common.sendRequest = sendRequest;
+	
 	/**
 	 * 서버로 요청을 날리고 그 결과를 text으로 밭기
 	 * @param {string} url 요청URL
@@ -87,7 +89,7 @@
 		return getResponse(url, body, options)
 		.then((response) => {
 			return response.text()
-		})
-	}
-	window.getTemplate = getTemplate
+		});
+	};
+	window.common.getTemplate = getTemplate;
 }
