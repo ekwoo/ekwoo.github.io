@@ -79,8 +79,7 @@ export default class Board {
 	 * 게시글 리스트를 뿌려준다.
 	 * @param {list}	articleList	게시글 목록
 	 */
-	showList(){
-		const idx = this.articleMap[this.currentArticle].idx;		
+	showList(){	
 		const totalPage = Math.ceil(this.total/pagingSize);
 
 		const currentNavi = Math.floor(this.currentPage/naviSize);
