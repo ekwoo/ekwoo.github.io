@@ -12,11 +12,43 @@
 #articleTitle {
 	color: #555555;
 	font-weight: bold;
-	font-size: 1.2em;
-	margin-bottom: 15px;
+	font-size: 12px;
+	margin: 15px 8px;
 }
+
 #articleContent {
-	margin-bottom: 20px
+	margin-bottom: 20px;
+	font-family: 맑은고딕, Malgun Gothic, dotum, gulim, sans-serif;
+	font-size: 12px;
+	color: #444444;
+}
+
+#articleContent * {
+	margin: 4px;
+	margin-bottom: 16px;
+}
+
+#articleContent h1, #articleContent h2 {
+	border-bottom: 1px solid #999999;
+	padding-bottom: 4px;
+}
+
+#articleContent p {
+	line-height: 2em;
+}
+
+#articleContent ul {
+	padding-left: 20px;
+}
+
+#articleContent pre {
+	position: relative;
+}
+
+#articleContent .languageLabel {
+	position: absolute;
+	right: 6px;
+	color: #e6e1dc;
 }
 
 #board .title {
@@ -84,6 +116,7 @@
 	display: flex;
 	justify-content: center;
 	margin: 4px;
+	user-select: none;
 }
 
 #board #pagenator div{
@@ -101,6 +134,7 @@
 #board #pagenator a.disabled{
 	cursor: default;
 	color: #aaaaaa;
+	pointer-events: none;
 }
 #board #pagenator a:hover:not(.disabled){
 	color: #222222;

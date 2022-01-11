@@ -1,6 +1,10 @@
-<pre>
+## 인덱스 삭제 
+```json
 DELETE /test-text
-
+```
+ 
+## 인덱스 생성 
+```json
 PUT /test-text
 {
   "settings": {
@@ -36,7 +40,7 @@ PUT /test-text
         }
       },
       "filter": {
-        "snowball_english":{
+        "snowball_english": {
           "type":"snowball",
           "language":"English"
         },
@@ -104,7 +108,10 @@ PUT /test-text
     }
   }
 }
+```
 
+## 게시글등록
+```json
 POST /test-text/_doc
 {
   "title" : "this is 제목입니다",
@@ -113,7 +120,10 @@ POST /test-text/_doc
   "createDtm":"2022-01-08T13:02:02",
   "updateDtm":"2022-01-08T13:02:02"
 }
+```
 
+## 게시글 검색
+```json
 GET /test-text/_search
 {
   "query": {
@@ -129,7 +139,10 @@ GET /test-text/_search
     }
   }
 }
+```
 
+## 분석테스트
+```json
 POST /_analyze
 {
   "tokenizer": {
@@ -153,4 +166,4 @@ POST /_analyze
   ],
   "text" : "이것은 한글 입니다. and this is something ENGLISH running fox"
 }
-</pre>
+```

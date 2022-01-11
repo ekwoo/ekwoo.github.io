@@ -14,6 +14,6 @@
 		</table>
 	</div>
 	<div id="pagenator">
-		<a id="goFirst">&lt;&lt;</a><a id="goFront">&lt;</a><div id="pageList"><a>1</a><a>2</a><a>3</a><a class="disabled">...</a><a>5</a><a>6</a><a>7</a></div><a id="goBack">></a><a id="goLast">>></a>
+		<a id="goFirst">&lt;&lt;</a><a id="goFront">&lt;</a><div id="pageList"></div><a id="goBack">></a><a id="goLast">>></a>
 	</div>
 </div>

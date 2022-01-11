@@ -1,8 +1,41 @@
-let template = await moduleHelper.getModuleTemplate('board');
 moduleHelper.loadModuleCss('board');
+let template = await moduleHelper.getModuleTemplate('board');
 
 const pagingSize = 7;
 const naviSize = 7;
+
+//게시글은 마크다운을 사용해서 글을 쓰자..
+showdown.extension('codehighlight', function() {
+	  function htmlunencode(text) {
+	    return (
+	      text
+	        .replace(/&amp;/g, '&')
+	        .replace(/&lt;/g, '<')
+	        .replace(/&gt;/g, '>')
+	      );
+	  }
+	  return [
+	    {
+	      type: 'output',
+	      filter: function (text, converter, options) {
+	        // use new shodown's regexp engine to conditionally parse codeblocks
+	        var left  = '<pre><code\\b[^>]*>',
+	            right = '</code></pre>',
+	            flags = 'g',
+	            replacement = function (wholeMatch, match, left, right) {
+	              // unescape match to prevent double escaping
+	              match = htmlunencode(match);
+	              let language = /class="([^ "]*)/.exec(left)[1];
+	              return '<pre><div class="languageLabel">'+language+'</div><code class="hljs '+language+' language-'+language+'">' + hljs.highlight(match, {language:language}).value + right;
+	            };
+	        return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
+	      }
+	    }
+	  ];
+	});
+
+const converter = new showdown.Converter({ extensions: ['codehighlight'] });
+converter.setOption('simpleLineBreaks', true);
 
 /**
  * 게시판
@@ -107,7 +140,7 @@ export default class Board {
 		let a;
 		for(;pageIdx<pageEnd;pageIdx++){
 			a = document.createElement('a');
-			a.textContent = pageIdx;
+			a.textContent = pageIdx+1;
 			if(pageIdx == this.currentPage){
 				a.className = 'active';
 			}
@@ -139,6 +172,9 @@ export default class Board {
 			tr.onclick=()=>{
 				this.openArticle(id, article.title);
 				window.scrollTo(0, 0);
+				var searchParams = new URLSearchParams(window.location.search)
+				searchParams.set('article', id);
+				history.pushState(null, '', window.location.pathname+'?'+searchParams.toString());
 			};
 			if(id == this.currentArticle){
 				tr.className = 'active';
@@ -146,7 +182,6 @@ export default class Board {
 			tbody.appendChild(tr);
 		}
 	}
-
 	/**
 	 * 선택한 게시글 을 보여준다.
 	 * @param {string}	articleId		보여줄 게시글 ID
@@ -157,7 +192,8 @@ export default class Board {
 		this.el.querySelector('#articleTitle').textContent = articleTitle;
 		this.el.querySelector('#articleContent').innerHTML = '';
 		try{
-			this.el.querySelector('#articleContent').innerHTML = await common.getTemplate('/article/'+this.options.id+'/'+articleId+'.content');
+			let template = await common.getTemplate('/article/'+this.options.id+'/'+articleId+'.content');
+			this.el.querySelector('#articleContent').innerHTML = converter.makeHtml(template);
 		}finally{
 			this.showList();
 		}

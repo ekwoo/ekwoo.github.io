@@ -10,13 +10,6 @@
 		contentCss = document.getElementById('contentCss');	//이거 왜 필요없지..
 		window.removeEventListener('load', init);
 		
-		let params = new URLSearchParams(document.location.search);
-		let menu = params.get('menu');
-		if(menu){
-			let arr = menu.split('/');
-			goto(arr);
-		}
-		
 		/**
 		 * 상단 메뉴 목록 - 이거는 메뉴추가할때마다 늘려줘야함..
 		 */
@@ -47,22 +40,25 @@
 				});
 			});
 		});
+		goCurrentPage();
 	};
 	window.addEventListener('load', init);
-	
-	/**
-	 * 메뉴추가
-	 */
-	function addMenu(name, sub){
-	};
+		
+	function goCurrentPage(){
+		let params = new URLSearchParams(document.location.search);
+		let menu = params.get('menu');
+		if(menu){
+			loadPage(menu, menu.substring(menu.lastIndexOf('/')+1));
+		}
+	}
 	
 	/**
 	 * 이름을 받아서 해당화면을 띄운다.
 	 * 띄우는 방식은 template, js css를 꽂아주는식..
 	 * 캐시는 브라우저가 해 주지 않을까?
 	 */
-	async function goto(arr){
-		let path = '/menu/'+arr.join('/')+'/'+arr[arr.length-1];
+	async function loadPage(pagePath, pageId){
+		let path = '/menu/'+pagePath+'/'+pageId;
 		
 		let cssPath = path+'.css';
 		contentCss.href = cssPath;
@@ -80,5 +76,13 @@
 		});
 	};
 	
-	main.goto = goto;
+	main.goto = (arr)=>{
+		let pagePath = arr.join('/');
+		history.pushState(null, '',  window.location.pathname+'?menu='+pagePath);
+		loadPage(pagePath, arr[arr.length-1]);
+	}
+	
+	window.onpopstate = (event) => {
+		goCurrentPage();
+	};
 }
