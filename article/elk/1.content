@@ -28,7 +28,7 @@ PUT /test-text
           "filter": [
             "lowercase",
             "stop",
-            "snowball_english",
+            "porter_stem",
             "nori"
           ]
         }
@@ -40,10 +40,6 @@ PUT /test-text
         }
       },
       "filter": {
-        "snowball_english": {
-          "type":"snowball",
-          "language":"English"
-        },
         "nori": {
           "type": "nori_part_of_speech",
           "stoptags": [
@@ -136,7 +132,9 @@ GET /test-text/_search
     "fields": {
       "title": {},
       "content": {}
-    }
+    },
+    "fragment_size": 100,
+    "number_of_fragments": 3,
   }
 }
 ```
@@ -152,10 +150,7 @@ POST /_analyze
   "filter": [
     "lowercase",
     "stop",
-    {
-      "type":"snowball",
-      "language":"English"
-    },
+    "porter_stem",
     {
       "type": "nori_part_of_speech",
       "stoptags": [

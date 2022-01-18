@@ -24,6 +24,7 @@
 			let subUl = document.createElement('ul');
 			subDiv.appendChild(subUl);
 			subDiv.style.maxHeight='0';
+			subDiv.style.zIndex='10000';
 			topDiv.onmouseover = () => {subDiv.style.maxHeight = subUl.offsetHeight+10+'px'};
 			topDiv.onmouseout = () => {subDiv.style.maxHeight = '0'};
 			topEl.appendChild(topDiv);
@@ -77,12 +78,14 @@
 	};
 	
 	main.goto = (arr)=>{
-		let pagePath = arr.join('/');
-		history.pushState(null, '',  window.location.pathname+'?menu='+pagePath);
+		let pagePath = arr.join('%2F');
+		history.pushState('/', '',  window.location.pathname+'?menu='+pagePath);
 		loadPage(pagePath, arr[arr.length-1]);
 	}
 	
 	window.onpopstate = (event) => {
-		goCurrentPage();
+		if(event.state != null){	//event가 null이면 hash change임
+			goCurrentPage();
+		}
 	};
 }

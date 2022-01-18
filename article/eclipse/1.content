@@ -1,0 +1,57 @@
+#개발배경
+컴퓨터를 쓰다 보면... 한/영 키 관련 동작은 아무리 생각해도 뭔가 *잘못* 만들어 진 것 같다는 느낌이 든다.
+한글을 입력해야지 하고 글을 치면 이상하게 영어가 입력되고 반대로 영어를 입력해야지 하고 글을 치면 이상하게 한글이 입력되서, *항상* 하나하나 지우고 한/영 키를 누른 후 다시 입력을 하게 된다.
+더 답답한건 잘못 친 걸 깨닫고, 한/영 키를 누르고, 글자를 지운 뒤에 다시 한/영 키를 누르면서 바보 짓을 반복하게 될 때이다.
+
+
+물론 윈도우 우측 하단에는 지금 입력기가 한글인지 영어인지 보여주는 영역이 있지만
+![IME Indicator](/article/eclipse/image/1/ime_indicator.png)
+글자를 입력 할 때는 *커서*에 눈이 가 있지 우측 하단을 보지는 않아서 거의 도움이 되지 않는다.
+
+불편해도 그려려니하고 사용하고 있었으나,
+어느날 블라인드에 개발 시 변수 명을 한글로 쓰는게 좋니마니하는 글을 보고나니 나도 변수명을 한글로 써보는것을 시도 했다가 *한/영 키*에 패배하고 다시 영어 변수명을 썼던 기억이 나서
+**한글상태일 때 커서의 모양을 변경**해서 커서만 봐도 한/영 상태를 알 수 있게 해 주는 이클립스 플러그인을 개발 해 보기로 마음을 먹었고,
+별로 쓸 것도 없는 블로그에 개발기나 적어보자 싶어서 정리 해 둔다.
+
+많고 많은 IDE 중에 왜 이클립스냐면.. 으...
+
+#플러그인 개발
+##프로젝트 생성
+Package Explorer에서 우클릭 -> new로 들어가면 아래와 같이 목록에 Plug-in Project Wizard가 있다.
+![Plug-in Project](/article/eclipse/image/1/new_project.png)
+
+이름을 적당히 정하고 다른설정은 굳이 건들지 않으면서 넘어가면 아래와 같이 템플릿 선택 화면이 나오는데,
+이것저것 눌러봤지만 개발하려는것과 연관된건 잘 안보이니, Custom Wizard 정도나 선택하자 
+![Plug-in Template](/article/eclipse/image/1/plugin_template.png)
+
+나는 설정에서 한/영 커서변환을 on off 할 수 있게 하고싶기 때문에, Preference Page를 선택해보았다.
+사실 Preference는 핵심기능은 아니긴 하지만.. 
+![Template Selection](/article/eclipse/image/1/template_selection.png)
+
+여기까지 하면 프로젝트가 하나 생성된다.
+
+##플러그인 프로젝트 구조
+뭔가 개발하기에 앞서서 plugin.xml을 살펴보자.
+![plugin.xml](/article/eclipse/image/1/plugin_xml.png)
+
+열어보면 하단에 여러 탭이 있는데, 
+중요한건 **Extensions**와 **Dependencies** 이다.
+![plugin tabs](/article/eclipse/image/1/under_tabs.png)
+
+**Extensions**은 이클립스를 내가 확장하는 부분을 의미하며, Extensions마다 그에 맞는 확장 클래스를 지정하게 된다.
+앞서 wizard에서 Preference Template을 선택했으므로, preference Page 관련 Extensions 두 개가 이미 추가되어있다.
+![Extensions](/article/eclipse/image/1/extensions.png)
+참고로 바로 오른쪽의 Extension Points는 내 플러그인을 다른애가 확장할수 있게 열어주는 기능인 듯 하다. (쓸일은없을듯하다)
+
+**Dependencies**는.. 플러그인 개발에 필요한 플러그인..을 의미하며, 여기도 두 개가 이미 잡혀 있다.
+플러그인 개발 하면서 필요한게 있으면 그때그때 add 시켜주면 된다.
+![Dependencies](/article/eclipse/image/1/dependencies.png)
+
+결국 *플러그인 개발*은 이클립스에서 기능을 확장할 **Extension** 및 클래스를 등록하고,
+플러그인 개발 시 필요한 추가 플러그인을 **Dependencies**에 더하는 방식으로 개발하면 되는 듯 하다.
+정확히 무슨 Extension을 쓰고 Dependencies를 써야하는지는 검색해서 개발해야 하는 듯 하고...
+
+Extensions 설정 내용은 결국 plugin.xml 파일에 들어가고
+Dependencies 설정 내용은 결국 MANIFEST.MF 파일에 들어간다.
+
+실제 코딩은 다음 게시글에서 계속 적어야겠다.

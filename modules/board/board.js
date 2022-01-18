@@ -174,7 +174,7 @@ export default class Board {
 				window.scrollTo(0, 0);
 				var searchParams = new URLSearchParams(window.location.search)
 				searchParams.set('article', id);
-				history.pushState(null, '', window.location.pathname+'?'+searchParams.toString());
+				history.pushState('/', '', window.location.pathname+'?'+searchParams.toString());
 			};
 			if(id == this.currentArticle){
 				tr.className = 'active';
