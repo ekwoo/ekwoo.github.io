@@ -16,11 +16,15 @@
 	margin: 15px 8px;
 }
 
-#articleContent {
-	margin-bottom: 20px;
+#articleContent * {
 	font-family: 맑은고딕, Malgun Gothic, dotum, gulim, sans-serif;
+}
+
+
+#articleContent {
 	font-size: 14px;
 	color: #444444;
+	margin-bottom: 20px;
 }
 
 #articleContent * {
@@ -53,6 +57,10 @@
 	position: absolute;
 	right: 6px;
 	color: #e6e1dc;
+}
+
+code {
+    background-color: rgba(27, 31, 35, 0.05);
 }
 
 #board .title {

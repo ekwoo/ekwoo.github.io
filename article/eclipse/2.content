@@ -1,0 +1,155 @@
+#기본코드분석 & Preference 만들기
+##Activator
+자동으로 생성된 클래스 중에 기본 패키지 경로 바로 하위에 생기는 `Activator` 라는 클래스가 있다.
+```java
+/**
+ * The activator class controls the plug-in life cycle
+ */
+public class Activator extends AbstractUIPlugin {
+
+	// The plug-in ID
+	public static final String PLUGIN_ID = "ImeCaret"; //$NON-NLS-1$
+
+	// The shared instance
+	private static Activator plugin;
+	
+	/**
+	 * The constructor
+	 */
+	public Activator() {
+	}
+
+	@Override
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		plugin = this;
+	}
+
+	@Override
+	public void stop(BundleContext context) throws Exception {
+		plugin = null;
+		super.stop(context);
+	}
+
+	/**
+	 * Returns the shared instance
+	 *
+	 * @return the shared instance
+	 */
+	public static Activator getDefault() {
+		return plugin;
+	}
+
+}
+```
+
+위 클래스는 어떤 플러그인을 만들더라도 생성이 되는듯 하며 플러그인의 lifecycle을 조절한다고 적혀있긴한데,
+실제로 그렇게 많이 쓸 일은 없었다. 그냥 설정정보획득이 필요할 때 정도 썼다.
+참고로 주석중에 **$NON-NLS-1$**는 해당 변수를 사용하는 곳이 없더라도 IDE에서 warning을 띄우지 말라는 뜻이라고 한다. (Non-National Language Support)
+
+##preferences.SamplePreferencePage
+이 클래스는 우리가 Preference Template을 선택 했기 때문에 생성된 3가지 클래스 중 하나이며, 실질적으로 preference 설정의 거의 대부분을 차지한다.
+Extensions 설정의 `org.eclipse.ui.preferencePages` 설정의 class는 이 클래스가 지정되어 있다.
+```java
+public class SamplePreferencePage
+	extends FieldEditorPreferencePage
+	implements IWorkbenchPreferencePage {
+
+	public SamplePreferencePage() {
+		super(GRID);
+		setPreferenceStore(Activator.getDefault().getPreferenceStore());
+		setDescription("A demonstration of a preference page implementation");
+	}
+	
+	/**
+	 * Creates the field editors. Field editors are abstractions of
+	 * the common GUI blocks needed to manipulate various types
+	 * of preferences. Each field editor knows how to save and
+	 * restore itself.
+	 */
+	public void createFieldEditors() {
+		addField(new DirectoryFieldEditor(PreferenceConstants.P_PATH, 
+				"&Directory preference:", getFieldEditorParent()));
+		addField(
+			new BooleanFieldEditor(
+				PreferenceConstants.P_BOOLEAN,
+				"&An example of a boolean preference",
+				getFieldEditorParent()));
+
+		addField(new RadioGroupFieldEditor(
+				PreferenceConstants.P_CHOICE,
+			"An example of a multiple-choice preference",
+			1,
+			new String[][] { { "&Choice 1", "choice1" }, {
+				"C&hoice 2", "choice2" }
+		}, getFieldEditorParent()));
+		addField(
+			new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
+	 */
+	public void init(IWorkbench workbench) {
+	}
+	
+}
+```
+생성자에 `Activator.getDefault().getPreferenceStore()`라는 코드가 보이는데, 아까 처음에 나온 `Activator` 클래스를 사용하고 있다.
+설정정보는 위와 같이 가져오며, 상황에따라 다르게 가져오는 경우도 있는 듯 한데 나는 그냥 저 방식 그대로 사용했다.
+
+createFieldEditors는 실제로 preference창의 내용을 만드는 함수이며, 샘플은 폴더선택(DirectoryFieldEditor), 체크박스(BooleanFieldEditor), 라디오버튼(RadioGroupFieldEditor), 텍스트인풋(StringFieldEditor)의 예시를 제공한다.
+
+나는 IME Caret의 사용여부(체크박스)와 Caret의 타입선택(라디오버튼) 설정이 필요했기 때문에 간단히 아래와 같이 만들어보았다.
+```java
+	public void createFieldEditors() {
+		useAltCaret = new BooleanFieldEditor(
+				PreferenceConstants.USE_IME_CARET,
+				"Change Caret in IME mode",
+				getFieldEditorParent());
+		addField(useAltCaret);
+		
+		caretType = new RadioGroupFieldEditor(
+				PreferenceConstants.CARET_TYPE,
+				"IME Caret Type",
+				1,
+				new String[][] { 
+					{"&Wide", "imecaret.caret.WideCaret" },
+					{"&Underline", "imecaret.caret.UnderCaret" }
+				}
+		, getFieldEditorParent());
+		addField(caretType);
+	}
+``` 
+
+##preferences.PreferenceConstants
+위 `SamplePreferencePage` 클래스를 보면 `PreferenceConstants.P_PATH` 같은 상수를 사용하고 있는것을 볼 수 있는데,
+이 클래스는 설정에서 사용할 상수들을 정의하고 사용하는 역할이다. 사실 없어도 상관없어보이지만, 나는 아래와 같이 설정해서 사용했다.
+```java
+public class PreferenceConstants {
+	public static final String USE_IME_CARET = "useImeCaret";
+	public static final String CARET_TYPE = "caretType";
+}
+```
+
+##preferences.PreferenceInitializer
+이 클래스는 딱 플러그인을 설치 한 직후의 초기 설정을 지정한다.
+특별할건 없어보인다. 한 번 설정을 바꾸고 나면 쓰이지도 않는다.
+Extensions 의  `org.eclipse.core.runtime.preferences`에 이 클래스가 지정된다.
+```java
+public class PreferenceInitializer extends AbstractPreferenceInitializer {
+	public void initializeDefaultPreferences() {
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		store.setDefault(PreferenceConstants.USE_IME_CARET, false);	//IME Caret을 사용하지 않는것이 기본
+		store.setDefault(PreferenceConstants.CARET_TYPE, "wide");	//기본 Caret은 Wide 형
+	}
+}
+```
+#플러그인 테스트
+여기까지 하면 설정창을 띄울 수 있다. 개발한 플러그인을 띄우기 위해서는 다음과 같이 플러그인프로젝트를 Eclipse Application 으로 Run 한다.
+![Test Plugin](/article/eclipse/image/2/2_test_plugin.png)
+이러면 새로운 이클립스가 실행된다. 새 이클립스에서 Window > preferences 로 들어간 후 Ime Caret을 누르면 아래와 같이 방금 만들 창을 볼 수 있다.
+![Test Plugin](/article/eclipse/image/2/2_preferences.png)
+![Test Plugin](/article/eclipse/image/2/2_IME_caret_preference.png)
+
+설정 창은 이 정도면 된 것 같으니... 다음에는 진짜 IME Caret 기능을 만들어 보자.
