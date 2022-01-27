@@ -27,7 +27,7 @@
 	margin-bottom: 20px;
 }
 
-#articleContent * {
+#articleContent > * {
 	margin: 4px;
 	margin-bottom: 16px;
 }
@@ -57,6 +57,18 @@
 	position: absolute;
 	right: 6px;
 	color: #e6e1dc;
+}
+#articleContent table {
+	border-collapse: collapse;
+	border : 1px solid #dddddd;
+}
+
+#articleContent th, #articleContent td {
+	border : 1px solid #dddddd;
+	padding : 4px;
+}
+#articleContent th{
+	background-color: #f8f8f8;
 }
 
 code {

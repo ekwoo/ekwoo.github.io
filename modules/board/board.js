@@ -36,7 +36,8 @@ showdown.extension('codehighlight', function() {
 
 const converter = new showdown.Converter({ extensions: ['codehighlight'] });
 converter.setOption('simpleLineBreaks', true);
-
+converter.setOption('tables', true);
+converter.setOption('strikethrough', true);
 /**
  * 게시판
  */

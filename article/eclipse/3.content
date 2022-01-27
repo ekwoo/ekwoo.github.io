@@ -1,0 +1,119 @@
+#Caret 
+##StartUp
+플러그인 Extensions에는 여러 종류가 있으나, 나는 StartUp을 사용하기로 했다.
+**기본 에디터를 확장**하는 Extension을 찾지못했기 때문에, 이클립스 기동시 **이벤트**를 달아서,
+한/영 키가 눌릴때. 그리고 그 외 에디터의 커서가 생성/갱신되는 이벤트 직후 **커서를 다시 엎어치는** 방식으로 구현할 수 밖에 없었기 때문이다.
+따라서 다음과 같이 startup extension을 추가 하였다.
+![startup](/article/eclipse/image/3/startup.png)
+
+StartUp Extension에 대한 상세 설명은 아래를 참고하고..
+[StartUp reference](https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fextension-points%2Forg_eclipse_ui_startup.html)
+plugin.xml에 아래와 같이 일단 startup을 추가 해 주자.
+![startup plugin](/article/eclipse/image/3/startup_plugin.png)
+
+추가한 실제 클래스도 만들어야하며, 위 링크의 설명대로 org.eclipse.ui.IStartup 인터페이스를 상속받아야 한다.
+일단 형태는 아래와 같다.
+```java
+public class StartUp implements IStartup{
+	@Override
+	public void earlyStartup() {
+		// TODO Auto-generated method stub
+	}
+}
+```
+구현해야 하는 함수는 하나이며, 단순하게 이클립스 기동 시 실행되는 역할이다.
+
+##한/영키 이벤트 잡기
+한글/영어 상태는 한/영키를 누를때 마다 바뀌므로, 가장 먼저 한/영키이벤트를 잡아야 했다.
+처음에는 일단 에디터 활성화  이벤트리스너를 만들고, 거기서 다시 키 입력 이벤트리스너를 달려고 했으나,
+다른키는 다 잘 잡히는데 *한/영*키 만은 키 입력 이벤트로 잡히지 않아서, 다음과 같이 윈도우 훅을 달기로 했다.
+이것도 나 혼자쓰는거니까 사용했지 일하는거랑 관련있는거였으면 무서워서 못썼을듯.. 그리고 윈도우에서만 동작할거같다.
+```java
+//OS.SetWindowsHookEx(int idHook, long lpfn, long hmod, int dwThreadId);
+long hook = OS.SetWindowsHookEx(2, lpfn, 0L, OS.GetCurrentThreadId());
+```
+[SetWindowsHookEx reference](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexa)
+|파라미터              |                     설명                                         |
+|:-------------|:----------------------------------------------|
+| idHook       | Hook의 타입. 키이벤트는 2 (WH_KEYBOARD)            |
+| lpfn         | Hook 함수의 포인터                                                        |
+| hmod         | Hook함수가 있는 DLL 핸들. 현재스레드의 함수라면 0이어야 한다 |
+| dwThreadId   | Hook함수가 돌 스레드 ID                            |
+
+lpfn값이 문제인데, 일단 콜백함수를 가진 클래스를 만들어야 한다.
+```java
+public class WindowProc {
+	long windowProc(long hwnd, long msg, long wParam, long lParam) {
+		if(msg == 21) {
+			//한영키 이벤트
+		}
+	}
+	return OS.DefWindowProc(hwnd, (int)msg, wParam, lParam);
+}
+```
+키이벤트 Hook은 아래와 같은 파라미터를 가진 함수를 만들면 되며 리턴은 저거 고정인듯 하다.
+[KeyboardProc callback reference](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms644984(v=vs.85))
+|파라미터    |                           설명                                                              |
+|:-------|:----------------------------------------------------------------|
+| hwnd   | 윈도우 핸들                                                                                                   |
+| msg    | 가상키 코드. IME관련 키코드는 많으나, 내 환경에서 테스트 해 보니 21만 들어오는 듯 했다. |
+| wParam | 키입력메세지. 이런저런 상태를 나타내는데, 2^32 bit가 1이면 key up             |
+| lParam | 안쓰이는듯                                                                                                     |
+
+이제 다시 Callback 클래스를 사용해서 포인터를 획득한다.
+```java
+Callback windowCallback = new Callback(new WindowProc(), "windowProc", 4);
+long lpfn = windowCallback.getAddress();
+if(lpfn != 0) {
+	hook = OS.SetWindowsHookEx(2, lpfn, 0L, OS.GetCurrentThreadId());
+}else {
+	SWT.error(SWT.ERROR_NO_MORE_CALLBACKS);
+}
+```
+Callback 생성자 파라미터는 아래와 같으며 리턴값이 lpfn에 사용될 주소값이다.
+|파라미터       | 설명                             |
+|:---------|:-------------------|
+| object   | 콜백함수가 있는 객체         |
+| method   | 콜백함수 이름                 |
+| paramCnt | 콜백함수의 파라미터 개수    |
+
+주소가 0이면 예외인데, 예외처리는 일반적으로 저렇게 하는 것 같아서 똑같이 작성했다.
+
+##IME 상태 확인
+한/영키를 눌렀다고 해도 지금 한글상태인지 영어상태인지를 알아야 커서를 맞게 바꿀 수 있다.
+다음과 같이 한영키 획득과 비슷하게 OS와 연계해서 획득하였다.
+```java
+//현재 윈도우의 핸들 얻기
+long hwnd = OS.GetActiveWindow();
+//IME 윈도우 핸들 얻기
+long hwndIme = OS.ImmGetDefaultIMEWnd(hwnd);
+//IME가 열려있는지 확인
+long status = OS.SendMessage(hwndIme, 643, 5, 0);
+//0이 아니면 IME OPEN
+if(status != 0){
+	//한글
+}else{
+	//영어
+}
+```
+IME라는게 정확히 어떻게 동작하는지까지는 모르겠지만 뭔가 윈도우 형태로 뜨는 듯 하다.
+따라서 현재 윈도우핸들 획득 -> 해당 윈도우의 IME 윈도우 핸들 획득 순으로 접근해야 했다.
+OS.SendMessage는 대충 다음과 같은 형태다.
+[SendMessage reference](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
+|파라미터       | 설명                                  |
+|:---------|:----------------------|
+| hWnd     | 메세지를 보낼 핸들                 |
+| Msg      | 메세지                                |
+| wParam   | Msg에 따라 다른 값                |
+| lParam   | Msg와 wParam에 따라 다른 값  |
+
+Msg는 WM\_IME\_CONTROL (643)을 사용했다.
+[WM\_IME\_CONTROL reference](https://docs.microsoft.com/en-us/windows/win32/intl/wm-ime-control)
+WM\_IME\_CONTROL는 다시 다양한 Command가 있으며 이것을 wParam으로 사용한다.
+나는 IMC_GETOPENSTATUS(5) 를 사용해서 IME 윈도우가 열려있는지 확인했다.
+이때 lParam은 사용되지 않는다.
+
+여기까지 하면 한/영키를 누를때마다 이벤트를 잡아서 처리를 할 수 있게 된다..
+다만 실제로 해 보면 한/영키 이벤트 후에 IME가 변경되는지, 획득한 IME상태와 실제상태가 달랐기때문에, 뒤집어줘야했다.
+
+

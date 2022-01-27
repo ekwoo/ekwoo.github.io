@@ -43,7 +43,7 @@ public class Activator extends AbstractUIPlugin {
 }
 ```
 
-위 클래스는 어떤 플러그인을 만들더라도 생성이 되는듯 하며 플러그인의 lifecycle을 조절한다고 적혀있긴한데,
+위 클래스는 어떤 플러그인을 만들더라도 기본적으로 생성이 되는 듯 하며 플러그인의 lifecycle을 조절한다고 적혀있긴한데,
 실제로 그렇게 많이 쓸 일은 없었다. 그냥 설정정보획득이 필요할 때 정도 썼다.
 참고로 주석중에 **$NON-NLS-1$**는 해당 변수를 사용하는 곳이 없더라도 IDE에서 warning을 띄우지 말라는 뜻이라고 한다. (Non-National Language Support)
 
@@ -148,7 +148,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 #플러그인 테스트
 여기까지 하면 설정창을 띄울 수 있다. 개발한 플러그인을 띄우기 위해서는 다음과 같이 플러그인프로젝트를 Eclipse Application 으로 Run 한다.
 ![Test Plugin](/article/eclipse/image/2/2_test_plugin.png)
-이러면 새로운 이클립스가 실행된다. 새 이클립스에서 Window > preferences 로 들어간 후 Ime Caret을 누르면 아래와 같이 방금 만들 창을 볼 수 있다.
+이러면 새로운 이클립스가 실행된다. 새 이클립스에서 Window > preferences 로 들어간 후 Ime Caret을 누르면 아래와 같이 방금 만든 창을 볼 수 있다.
 ![Test Plugin](/article/eclipse/image/2/2_preferences.png)
 ![Test Plugin](/article/eclipse/image/2/2_IME_caret_preference.png)
 
