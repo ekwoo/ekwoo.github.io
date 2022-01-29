@@ -1,0 +1,60 @@
+#WSL2 설치해보기
+잘 될지 모르겠지만. 인터넷에서 긁은거 정리 해 두고, 출근해서 해보자.
+
+##WSL2 설치
+###윈도우 기능 활성화
+파워쉘에서 하라는데 cmd에서도 되지 않을까?
+####wsl활성화
+`dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart`
+####가상머신 활성화
+`dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart`
+
+###wsl 업데이트
+####설치파일
+`https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi`
+####설치확인
+`wsl -l -v`
+####wsl2를 기본으로 설정
+`wsl --set-default-version 2`
+
+##우분투 설치
+###설치파일 획득
+`https://aka.ms/wslubuntu2004`
+`https://aka.ms/wslubuntu2004arm`
+
+
+###폐쇄망에서 아래와 같이 설치한다.
+`Add-AppxPackage .\app_name.appx`
+
+###구성 확인
+####아래 명령으로 설치목록 확인하고
+`wsl -l -v`
+####혹시나 wsl1이라면 2로 바꾸기
+`wsl --set-version Ubuntu-20.04 2`
+
+## 가상 리눅스 추가 설치..
+/var/cache/apt/archives 안의 dep파일을 옮기면 된다고 한다.
+옮긴후에는 해당 폴더에서 `dpkg --force-all -i *.deb` 를 치라고 함.
+`-i 파일명`이 설치하라는거고
+`--force-all`은 잡다한 에러 무시인듯
+
+근데 저 경로 파일개수가 좀 많아서.. dep파일 자체는 이런식으로 받음
+`sudo apt-get download podman`
+
+###podman
+podman은 apt-key를 추가해줘야 받아짐
+```bash
+. /etc/os-release
+echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
+sudo apt-get update
+sudo apt-get -y upgrade
+sudo apt-get -y install podman
+```
+###기타 필요하다고 하는것들..
+```bash
+sudo apt-get download ca-certificates
+sudo apt-get download curl
+sudo apt-get download gnupg
+sudo apt-get download lsb-release
+```
