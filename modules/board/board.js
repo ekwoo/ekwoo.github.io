@@ -58,7 +58,7 @@ export default class Board {
 		this.el = el;
 		this.options = options;
 		this.articleMap = null;
-		this.entry = null;
+		this.entries = null;
 		
 		//페이징
 		this.total = 0;
@@ -76,10 +76,10 @@ export default class Board {
 		common.sendRequest('/article/'+options.id+'/list.json')
 		.then((articleMap)=>{
 			this.articleMap = articleMap;
-			let entry = Object.entries(this.articleMap);
-			this.el.querySelector('#articleTotalCnt').textContent = this.total = entry.length;
+			this.entries = Object.entries(this.articleMap).sort((a, b) => {return b[0] - a[0];});
+			this.el.querySelector('#articleTotalCnt').textContent = this.total = this.entries.length;
 			//번호붙이기
-			entry.forEach((entry, idx) => {
+			this.entries.forEach((entry, idx) => {
 				const [id, article] = entry;
 				article.idx = idx;
 			});
@@ -160,13 +160,11 @@ export default class Board {
 		// 현제 페이지의 게시글 목록 뿌리기
 		let articleIdx = this.currentPage*pagingSize;
 		const articleEnd = Math.min((this.currentPage+1)*pagingSize, this.total);
-		
-		const entries = Object.entries(this.articleMap);
 		const tbody = this.el.querySelector('#articleList>table>tbody');
 		tbody.innerHTML = '';
 		let tr, td;
 		for(;articleIdx<articleEnd;articleIdx++){
-			const [id, article] = entries[articleIdx];
+			const [id, article] = this.entries[articleIdx];
 			tr = document.createElement('tr');
 			td = document.createElement('td');
 			td.textContent = article.title;
