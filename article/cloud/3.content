@@ -1,0 +1,136 @@
+#minikube관련 내용 정리
+##기본내용
+쿠버네티스를 운영을 위해 띄우려면 장비가 최소 3대가 필요하다.
+개발할땐 그렇게까지 할 필요 없으니 간단하게 노드 하나로 띄우기 위해 필요한게 minikube.
+사실 노드 하나면 그냥 컨테이너만 띄우면 되지 않나 싶지만 쿠버네티스가 필수인것들이 있어서......
+처음엔 podman으로 하려고 했으나 이런저런 문제에 막혀서 그냥 도커로 함
+
+##minikube
+아래 가이드 따라하면 대충 깔아진다..
+https://minikube.sigs.k8s.io/docs/start/
+
+###~~podman sudo사용시 비번입력제외~~
+```bash
+sudo visudo
+```
+~~가장 **아래**에 아래 내용 추가~~
+```bash
+username ALL=(ALL) NOPASSWD: /usr/bin/podman
+```
+
+###실행
+```bash
+minikube start
+```
+첫 실행때 뭔가 이것저것 엄청나게 받는다... 폐쇄망에 이걸 어떻게 깔라는거람..
+알아서 podman을 찾아서 잘 띄우는거같은데 가끔 안될수도 있다 아래 둘 중에 하나로 띄우자
+
+###~~확실히 podman쓰도록 띄우기~~
+```bash
+minikube start --driver=podman
+```
+
+###로그추가로 보기
+```bash
+--alsologtostderr
+```
+
+###별도의 클러스터 띄우기..?
+```bash
+minikube start -p cluster2
+```
+###~~디폴트로 podman을 쓰도록 변경(start전에 실행)~~
+```bash
+minikube config set driver podman
+minikube config set container-runtime cri-o
+```
+
+###정지
+```bash
+minikube stop
+```
+
+###삭제
+```bash
+minikube delete --all --purge
+```
+
+###api서버 호출
+```bash
+minikube ip
+curl -v -insecure http://{ip}:8443/api/v1/~
+```
+그냥하면 anonymouse 계정이라 보통 403이 난다.
+계정은 음... 서비스계정 대충 찾아보고
+Authorization 헤더로 토큰 입력하면 호출 되는듯..
+
+##kubectl
+뭔가 minikube자체 kubectl도 있긴있다. 그런데 가끔 에러나므로 그냥 깔자
+```bash
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+```
+난 이상하게 현재 위치에 깔려서 mv 쳐서 /usr/local/bin/kubectl로 옮김. 퍼미션도 꼭 줘야함
+
+###노드정보보기
+```bash
+kubectl get nodes -o wide
+```
+
+###서비스 목록보기
+```bash
+#default namespace
+kubectl get services
+#all namespace
+kubectl get services -A
+```
+###특정 서비스 만들기
+```bash
+kubectl create deployment hello-minikube --image=k8s.gcr.io/echoserver:1.4
+kubectl expose deployment hello-minikube --type=LoadBalancer --port=8080
+```
+아래꺼 타입은 NodePort와 LoadBalancer, ClusterIP가 있다.
+뭔차인진 잘..
+클러스터 IP는 외부포트가 없다. 인그레스 같은걸 껴야 쓸수있는듯 하다.
+
+###특정 서비스 외부에 노출하기
+```bash
+minikube service hello-minikube
+kubectl port-forward service/hello-minikube 7080:8080
+```
+wsl에서는 위에껀 해 봤자 의미가 없었다.
+아래껀 잘 되는듯.. --> 터널 뚫으면 위에것도 되나?
+
+###pod에 접속하기
+```bash
+kubectl get pods --all-namespaces
+kubectl -n eclipse-che exec -it che-7bfb976f57-4nwht -c oauth-proxy -- /bin/sh
+```
+-n [namespace] -c [container]
+-it 는 stdin, tty의 약자인듯.
+컨테이너는 없으면 안쓰면 된다.
+
+###namespace 지우기
+```bash
+kubectl delete ns developer
+```
+
+###커스텀 리소스 설정
+이클립스 체 는 커스텀리소스와 오퍼레이션으로 컨피그맵을 업데이트 한다.
+따라서 컨피그맵을 직접 고쳐봤다 금방원복되고..
+커스텀리소스를 yaml로 작성하고 아래와 같이 업뎃 / 결과조회 한다.
+```bash
+kubectl apply -f test.yml -n eclipse-che
+kubectl get CheCluster -o yaml -n eclipse-che
+```
+
+###시크릿 확인
+시크릿은 이것저것 있지만 인증 토큰도 여기 담긴다.
+일단 아래와 같이 목록획득
+계속 반복해서 쓰는건데, -A는 모든 네임스페이스 이며, 없으면 default에서만 조회하고, -n {namespace]로 지정가능하다.
+```bash
+#전체조회
+kubectl get secret -A
+#개별정보조회
+kubectl get secret {secret} -n {namespace} -o yaml
+```

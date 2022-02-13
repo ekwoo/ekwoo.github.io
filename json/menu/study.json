@@ -1,5 +1,6 @@
 {
 	"elk" : "ELK",
 	"eclipse" : "Eclipse",
-	"cloud" : "Cloud"
+	"cloud" : "Cloud",
+	"linux" : "Linux"
 }

@@ -1,0 +1,81 @@
+#ubuntu 관련 내용 정리
+어디까지가 리눅스고 어디까지가 우분투 전용인지 잘 모르겠음.
+##명령어
+###tee
+표준입력을 읽어서 표준출력과 파일에 쓰기.
+파일과 표준출력에 같이 쓰므로, 파일에 쓴 내용이 콘솔에도 찍힌다.
+```bash
+echo "hello" | tee OUTFILE
+```
+append하려면 -a 옵션을 추가한다.
+```bash
+echo "hello" | tee -a OUTFILE
+```
+
+###apt-key
+gpg 키를 관리한다.
+목록확인
+```bash
+apt-key list
+```
+키 추가
+filename에 - 를 적으면 표준입력에서 획득한다. 보통은 curl로 땡기는듯
+```bash
+sudo apt-key add filename
+```
+
+###sysctl
+커널튜닝명령어. 일시적으로 이런저런 커널 매개변수를 재설정
+```bash
+sysctl -w "key=value"
+```
+
+###nano
+뭔가 좀 다른 에디턴데 이게뭐람 가끔 vim으로 안고쳐지는것도 이거는 고쳐질때가 있는듯한데
+```bash
+sudo nano /etc/resolv.conf
+```
+###인증서 업데이트
+/etc/ca-certificates
+/usr/local/share/ca-certificates 에 인증서 두고
+```bash
+sudo update-ca-certificates
+```
+##설정파일
+###/etc/apt/sources.list, /etc/apt/sources.list.d/*
+위 두 경로의 파일은 repository를 저장하는 파일이다.
+/etc/apt/sources.list가 os기본파일이고
+/etc/apt/sources.list.d/* 에는 사용자가 정의한 파일이 들어가는 듯 하다.
+파일 이름은 .sources와 .sources.list 두가지 확장자를 가진다.
+
+sources파일 구조
+```bash
+#아카이브유형
+Types: deb
+URIs: http://us.archive.ubuntu.com/ubuntu
+#
+Suites: focal focal-updates
+#배포유형
+Components: main restricted
+```
+
+sources.list 파일 구조
+```bash
+deb http://us.archive.ubuntu.com/ubuntu focal main restricted
+deb http://us.archive.ubuntu.com/ubuntu focal-updates main restricted
+```
+
+보면 sources.list는 source의 내용을 그냥 한줄로 쭉 적은거 같다. 다만 Suites 별로 적어야 하는듯.
+
+###/etc/subuid, /etc/subgid
+명확하게는 모르겠다. 사용자의 uid와 gid의 범위를 설정하는것 같다. 겹치면 안된다.
+USERNAME:UID:RANGE 형식이다.
+그럼 각 사용자는 UID ~ UID+RANGE-1만큼의 sub uid를 가질 수 있게 되는듯. sub말고 standarduid는 /etc/passwd 를 보면 나온다고 함
+수정자체는 직접하는게 아니라 아래와 같이 usermod를 사용하는듯하다.
+```bash
+usermod --add-subuids 200000-201000 --add-subgids 200000-201000 johndoe
+```
+
+###/etc/sysctl.d/*.conf
+영구적으로 커널매개변수값을 조정
+key=value

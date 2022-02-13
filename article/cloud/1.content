@@ -41,20 +41,9 @@
 근데 저 경로 파일개수가 좀 많아서.. dep파일 자체는 이런식으로 받음
 `sudo apt-get download podman`
 
-###podman
-podman은 apt-key를 추가해줘야 받아짐
-```bash
-. /etc/os-release
-echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
-sudo apt-get update
-sudo apt-get -y upgrade
-sudo apt-get -y install podman
-```
-###기타 필요하다고 하는것들..
-```bash
-sudo apt-get download ca-certificates
-sudo apt-get download curl
-sudo apt-get download gnupg
-sudo apt-get download lsb-release
-```
+###종료
+`wsl -t Ubuntu`
+
+###루트계정 비번바꾸기
+`wsl -u root`
+`passwd root`

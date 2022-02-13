@@ -1,0 +1,118 @@
+#Eclipse Che
+##기본내용
+WEB IDE인건 좋은데 뭔가 쿠버네티스가 아니면 못띄우게 해 놓아서 꽤 번거롭다..
+폐쇄망에서 어떻게 이걸 할 수 있을까..?
+
+
+##설치
+일단 chectl를 깐다.
+```bash
+bash <(curl -sL  https://www.eclipse.org/che/chectl/)
+```
+
+helm을 깔아야 한다고 한다. 이게 뭔진 나중에 찾아보자
+```bash
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+minikube를 사용한다고 하면, 일단 아래와 같이 해 보자
+```bash
+minikube start --addons=ingress --memory=8192
+chectl server:deploy --platform minikube
+```
+
+잘 모르겠는데 미니쿠브 내렸다 올릴 때 마다 매번 디플로이를 해 줘야 한다. 엄청 오래 걸린다.
+잘 배포되면 마지막에 url이 뜨는데, 192.168.49.2.nip.io 이 호스트를.. 윈도우 hosts파일에서 127.0.0.1로 일단 바꾼다.
+문제는 이걸 바꾸면 wsl도 바뀐다는건데, wsl은 실제 url 로 가야하므로,
+잘 검색해서 wsl의 /etc/hosts파일과 /etc/resolv.conf 를 업데이트 하지 않게 하자. -> 잘 검색하니 자동 갱신을 끄는설정이 있다
+이거 안하면 로그인 직후에 500뜸
+```bash
+sudo rm /etc/resolv.conf
+sudo nano /etc/resolv.conf
+```
+
+##nginx설정
+**그냥 도커로 바꾸고 minikube tunnel 쓰는걸로 바꿈 아래내용 무시**
+
+~~찾아보니 minikube 버그로 podman사용시 tunnel설정이 안된다고 한다.
+부득이하게 nginx 하나 더 띄우서 연동시켰다.~~
+
+~~인증서 파일생성~~
+```bash
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/localhost.key -out /etc/ssl/certs/localhost.crt
+```
+
+~~nginx설정~~
+```bash
+        server {
+                #listen 80;
+                #listen [::]:80;
+                listen 443 ssl http2;
+                listen [::]:443 ssl http2;
+                ssl_certificate /etc/ssl/certs/localhost.crt;
+                ssl_certificate_key /etc/ssl/private/localhost.key;
+                ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
+                ssl_prefer_server_ciphers on;
+                server_name  dex.192.168.49.2.nip.io 192.168.49.2.nip.io;
+                location / {
+                        proxy_set_header Host $host;
+                        proxy_pass https://192.168.49.2/;
+						
+                        # WebSocket support
+                        proxy_http_version 1.1;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Connection $http_connection;
+                }
+        }
+```
+~~이렇게 하고 들어가니 잘못된 인증서라고 뜨...지만 무시하고 진행하면 어떻게 되긴한다.~~
+
+##로그인
+minikube dashboard를 띄운 후에 dex pod의 하단 설정을 보면 계정이 5개인가 있다.
+비번은 때려맞추면 되는데  che@eclipse.org/admin
+나머지는 전부 password가 비번이다.
+
+들어가면..흰화면이 뜬다..
+로그인 직후에 이클립스체에서 쿠버네티스 api로 뭔가 호출하는데 401이 뜨는듯 하다.
+디테일한 로그파악을 위해 아래와 같이 커스텀 리소스를 적용하자 아래 URL참조
+https://www.eclipse.org/che/docs/che-7/installation-guide/checluster-custom-resource-fields-reference/
+```yaml```
+spec:
+  server:
+    cheLogLevel: 'DEBUG'
+    customCheProperties:
+      CHE_LOGGER_CONFIG: 'che.infra.request-logging=TRACE'
+```
+
+다시 로그를 보면 Authorization헤더값을 볼 수 있다.
+서비스계정?으로는 잘 접속하다가, 로그인한 사용자의 토큰으로는 실패하는것으로 보이고,
+```bash
+minikube start ... --extra-config=apiserver.v=10
+```
+이렇게 다시 minikube api서버로그레벨 조정 후 api서버 로그를 보면 아래와 같이 에러? 가 계속 나는중이다.
+```
+E0213 10:12:03.199832       1 authentication.go:63] "Unable to authenticate the request" err="[invalid bearer token, oidc: authenticator not initialized]"
+E0213 10:12:03.387096       1 oidc.go:335] oidc authenticator: initializing plugin: Get "https://dex.192.168.49.2.nip.io/.well-known/openid-configuration": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "eclipse-che-local-CA")
+```
+
+아마도 api 서버에서 dex서버의 인증서가 없거나 한거같은데..
+```
+--oidc-ca-file=/etc/ca-certificates/dex-ca.crt
+--oidc-client-id=eclipse-che
+--oidc-groups-claim=groups
+--oidc-issuer-url=https://dex.192.168.49.2.nip.io
+--oidc-username-claim=name
+--oidc-username-prefix=-
+```
+위 값과 관련이 있는듯 하다. 일단 제일먼저 위에 ca파일이 있는지 보고 싶은데 이거 볼 방법이 없다..
+이클립스 체 deploy를 제일 처음 기동하면  tmp/dex-ca.crt파일을 생성하는게 나온다.
+이걸 /etc/ca-certificates/dex-ca.crt 여기로 카피하고 다시 시작 해 봤다.
+인증서..
+인증서 매번 재 생성되서 의미가 없다..?
+```bash
+minikube ssh "cd /etc/ca-certificates;
+```
+아무튼 이것저것 해 봤는데 아무리 해도 계속 에러나서 그냥 minikube 버전을 1.24.0으로 내릴 후에 됨..
+처음에 podman도 그렇고 이번것도 그렇고 minikube는 좀 이상한듯..
+
+그리고 조금 써볼려고 했더니 내 PC 16기가 메모리가 금방 터져서 뭐 똑바로 못한상태로 끝..

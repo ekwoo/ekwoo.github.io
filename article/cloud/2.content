@@ -1,0 +1,77 @@
+#podman관련 내용 정리
+~~쓰지말자 도커에 비해 에러가 너무 많음. 포드맨 에러가 많은게 아니라 미니쿠브같은 애들이랑 연계할 때 계속 에러남~~
+##기본내용
+###podman
+도커 CLI 기능으로, CRI-O/skopeo/buildah를 사용하기위한 cli역할 수행
+도커의 명령어는 다 지원하는듯
+
+###CRI-O
+도커의 Containerd와 같은 기능이다. 컨테이너를 실행시켜주는 역할.
+
+###buildah
+이미지를 빌드..
+
+###skopeo
+이미지 배포...
+
+##설치
+###podman
+링크를 따라 하도록 하자.
+https://podman.io/getting-started/installation
+
+podman은 레포지토리를 추가해줘야 받아짐 Ubuntu 20.10이상에서는 없이도된다고 하는데...
+```bash
+. /etc/os-release
+echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
+sudo apt-get update
+sudo apt-get -y upgrade
+sudo apt-get -y install podman
+```
+
+##설정
+###containers.conf
+컨테이너 설정..
+/usr/share/containers/containers.conf
+/etc/containers/containers.conf
+~/.config/containers/containers.conf
+
+###storage.conf
+저장공간 설정..
+/etc/containers/storage.conf
+~/.config/containers/storage.conf
+
+###registries.conf
+레지스트리 설정.. 굳이 유저별로 할 필요가 있을까?
+/etc/containers/registries.conf
+/etc/containers/registries.d/*
+~/.config/containers/registries.conf
+
+###mounts.conf
+컨테이너와 공유할 디렉토리를 설정
+실제경로:컨테이너경로
+/usr/share/containers/mounts.conf
+~/.config/containers/mounts.conf
+
+##Rootless 설정
+podman은 root권한이 없어도 실행할 수 있다.
+다만 root계정이 이것저것 설정을 해 줘야 가능하다.
+https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md
+fuse-overlayfs 설정만 해주면 그외는 따로 뭐 안해줘도 별문제는 없는듯..?
+
+#도커
+온갖게 문제가 되서 그냥 도커 까는게 편한듯
+```bash
+sudo apt-get update
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+```

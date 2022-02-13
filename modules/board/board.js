@@ -25,8 +25,12 @@ showdown.extension('codehighlight', function() {
 	            replacement = function (wholeMatch, match, left, right) {
 	              // unescape match to prevent double escaping
 	              match = htmlunencode(match);
-	              let language = /class="([^ "]*)/.exec(left)[1];
-	              return '<pre><div class="languageLabel">'+language+'</div><code class="hljs '+language+' language-'+language+'">' + hljs.highlight(match, {language:language}).value + right;
+				  let m = /class="([^ "]*)/.exec(left);
+				  if(m){
+					  let language = m[1];
+					  return '<pre><div class="languageLabel">'+language+'</div><code class="hljs '+language+' language-'+language+'">' + hljs.highlight(match, {language:language}).value + right;
+				  }
+				  return wholeMatch;
 	            };
 	        return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
 	      }
