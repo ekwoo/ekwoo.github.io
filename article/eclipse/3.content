@@ -116,6 +116,6 @@ WM\_IME\_CONTROL는 다시 다양한 Command가 있으며 이것을 wParam으로
 여기까지 하면 한/영키를 누를때마다 이벤트를 잡아서 처리를 할 수 있게 된다..
 다만 실제로 해 보면 한/영키 이벤트 후에 IME가 변경되는지, 획득한 IME상태와 실제상태가 달랐기때문에, 뒤집어줘야했다.
 
-++윈도우 새 IME 에서는 IMC\_GETOPENSTATUS(5) 대신 IMC\_GETCONVERSIONMODE(1) 을 사용해야 정상동작 함.
+++윈도우 새 IME 에서는 IMC\_GETOPENSTATUS(5) 에 추가로 IMC\_GETCONVERSIONMODE(1) 을 확인해야 정상동작 함.
 
 
